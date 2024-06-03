@@ -28,7 +28,7 @@ jobs:
       - name: Clone Repository
         uses: actions/checkout@v3
         with:
-          ref: package
+          ref: master
 
       - name: Current Version
         id: current_version
@@ -44,21 +44,20 @@ jobs:
         uses: actions/checkout@v3
         with:
           ref: ${{ github.ref_name }}
-
       - name: Apt Update
         env:
           DEBIAN_FRONTEND: noninteractive
         run: |
-          sudo apt-get update
-          sudo apt-get -y install curl git tar
+          # sudo apt-get update
+          sudo apt-get -y install curl git tar wget
       - name: Install OpenWrt SDK
         run: |
           cd ..
           mkdir tmp
-          curl -SLk --connect-timeout 30 --retry 2 "https://archive.openwrt.org/snapshots/trunk/ar71xx/generic/OpenWrt-SDK-ar71xx-generic_gcc-5.3.0_musl-1.1.16.Linux-x86_64.tar.bz2" -o "./tmp/SDK.tar.bz2"
+          curl -SLk --connect-timeout 30 --retry 2 "https://archive.openwrt.org/releases/23.05.3/targets/x86/64/openwrt-sdk-23.05.3-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz" -o "./tmp/SDK.tar.xz"
           cd \tmp
-          tar xjf SDK.tar.bz2
-          mv "OpenWrt-SDK-ar71xx-generic_gcc-5.3.0_musl-1.1.16.Linux-x86_64" "SDK"
+          tar xf SDK.tar.xz
+          mv "openwrt-sdk-23.05.3-x86-64_gcc-12.3.0_musl.Linux-x86_64" "SDK"
       - name: Change Source Codes Version
         run: |
           echo "v${{ needs.Get-Version.outputs.version }}-beta" > ./version
@@ -67,7 +66,7 @@ jobs:
         run: |
           cd ..
           mkdir tmp/SDK/package/luci-app-adguardhome
-          cp -rf "./xiaoxiao29/luci-app-adguardhome/." "./tmp/SDK/package/luci-app-adguardhome/"
+          cp -rf "./luci-app-adguardhome/." "./tmp/SDK/package/luci-app-adguardhome/"
       - name: Compile IPK
         run: |
           cd ..
@@ -77,7 +76,7 @@ jobs:
         run: |
           rm -rf ./luci-app-adguardhome_*
           cd ..
-          cp "./tmp/SDK/bin/ar71xx/packages/base/luci-app-adguardhome_${{ needs.Get-Version.outputs.version }}-beta_all.ipk" "./xiaoxiao29/luci-app-adguardhome_${{ needs.Get-Version.outputs.version }}-beta_all.ipk"
+          cp "./tmp/SDK/bin/x86_64/packages/base/luci-app-adguardhome_${{ needs.Get-Version.outputs.version }}-beta_all.ipk" "./xiaoxiao29/luci-app-adguardhome_${{ needs.Get-Version.outputs.version }}-beta_all.ipk"
           cd \xiaoxiao29
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
